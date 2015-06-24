@@ -5,11 +5,19 @@ module.exports = function(grunt) {
 		    unit: {
 		        configFile: 'karma.conf.js'
 		    }
+		},
+
+		jshint: {
+			files: ['src/*.js'],
+			options: {
+				jshintrc: '.jshintrc',
+				reporter: require('jshint-stylish')
+			}
 		}
 	});
 
 	grunt.loadNpmTasks('grunt-karma');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 
-	grunt.registerTask('default', [])
+	grunt.registerTask('default', ['jshint'])
 }
