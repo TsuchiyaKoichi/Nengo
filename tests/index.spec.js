@@ -56,7 +56,7 @@
 		});
 	});
 
-	describe('年号を変更する', function() {
+	describe('年号を変更する setNengo()', function() {
 
 		it('明治をセットするとyearsは1から45の配列になる', function() {
 			nengo.setNengo(1);
@@ -81,52 +81,105 @@
 
 	describe('年を変更する setYear()', function() {
 
-		it('平成1年は1月～12月までである', function() {
-			nengo.setNengo(4);
-			nengo.setYear(1);
-			expect(nengo.months).to.have.length(12);
-		})
+		describe('年号の変わり目の確認', function() {
 
-		it('昭和64年は1月だけである', function() {
-			nengo.setNengo(3);
-			nengo.setYear(64);
-			expect(nengo.months).to.have.length(1);
+			it('平成1年は1月～12月までである', function() {
+				nengo.setNengo(4);
+				nengo.setYear(1);
+				expect(nengo.months).to.have.length(12);
+			})
+
+			it('昭和64年は1月だけである', function() {
+				nengo.setNengo(3);
+				nengo.setYear(64);
+				expect(nengo.months).to.have.length(1);
+			});
+
+			it('昭和1年は12月だけである', function() {
+				nengo.setNengo(3);
+				nengo.setYear(1);
+				expect(nengo.months).to.have.length(1);
+			});
+
+			it('大正15年は1月～12月までである', function() {
+				nengo.setNengo(2);
+				nengo.setYear(15);
+				expect(nengo.months).to.have.length(12);
+			});
+
+			it('大正1年は7月～12月までである', function() {
+				nengo.setNengo(2);
+				nengo.setYear(1);
+				expect(nengo.months).to.have.length(6);
+			});
+
+			it('明治45年は1月～7月までである', function() {
+				nengo.setNengo(1);
+				nengo.setYear(45);
+				expect(nengo.months).to.have.length(7);
+			});
+
+			it('明治1年は1月～12月までである', function() {
+				nengo.setNengo(1);
+				nengo.setYear(1);
+				expect(nengo.months).to.have.length(12);
+			});
 		});
 
-		it('昭和1年は12月だけである', function() {
-			nengo.setNengo(3);
-			nengo.setYear(1);
-			expect(nengo.months).to.have.length(1);
+		describe('年号の変わり目の年に変更された時、選択中の月が変わり目の月だったとき', function() {
+
+			it('「平成2年1月」選択中から「平成1年」に変更したとき', function() {
+				nengo.setNengo(4);
+				nengo.setYear(2);
+				nengo.setMonth(1);
+				nengo.setYear(1);
+				expect(nengo.dates).to.have.length(23);
+				expect(nengo.dates[0]).to.equal(9);
+			});
+
+			it('「昭和63年1月」選択中から「昭和64年」に変更したとき', function() {
+				nengo.setNengo(3);
+				nengo.setYear(63);
+				nengo.setMonth(1);
+				nengo.setYear(64);
+				expect(nengo.dates).to.have.length(8);
+				expect(nengo.dates[nengo.dates.length - 1]).to.equal(8);
+			});
+
+			it('「大正10年7月」選択中から「大正1年」に変更したとき', function() {
+				nengo.setNengo(2);
+				nengo.setYear(10);
+				nengo.setMonth(7);
+				nengo.setYear(1);
+				expect(nengo.dates).to.have.length(2);
+				expect(nengo.dates[0]).to.equal(30);
+			});
 		});
 
-		it('大正15年は1月～12月までである', function() {
-			nengo.setNengo(2);
-			nengo.setYear(15);
-			expect(nengo.months).to.have.length(12);
+		describe('年号の変わり目月を選択中に、年が変更されたとき', function() {
+
+			it('「昭和1年12月」選択中から「昭和10年」に変更したとき', function() {
+				nengo.setNengo(3);
+				nengo.setYear(1);
+				nengo.setMonth(12);
+				nengo.setYear(10);
+				expect(nengo.dates).to.have.length(31);
+			});
 		});
 
-		it('大正1年は7月～12月までである', function() {
-			nengo.setNengo(2);
-			nengo.setYear(1);
-			expect(nengo.months).to.have.length(6);
-		});
-
-		it('明治45年は1月～7月までである', function() {
-			nengo.setNengo(1);
-			nengo.setYear(45);
-			expect(nengo.months).to.have.length(7);
-		});
-
-		it('明治1年は1月～12月までである', function() {
-			nengo.setNengo(1);
-			nengo.setYear(1);
-			expect(nengo.months).to.have.length(12);
+		describe('うるう年の2月を選択中に、年が変更されたとき', function() {
+			it('保留');
 		});
 	});
 
 	describe('月を変更する setMonth()', function() {
 
 		describe('通常月の確認', function() {
+
+			before(function() {
+				nengo.setNengo(4);
+				nengo.setYear(27);
+			});
 
 			it('1月、3月、5月、7月、8月、10月、12月は31日まで', function() {
 				nengo.setMonth(1);
@@ -178,7 +231,60 @@
 
 		describe('年号の変わり目の月の確認', function() {
 
-			it('平成1年の1月は9日～31日');
+			it('平成1年の1月は9日～31日', function() {
+				nengo.setYear(1);
+				nengo.setMonth(1);
+				expect(nengo.dates).to.have.length(23);
+				expect(nengo.dates[0]).to.equal(9);
+			});
+
+			it('昭和64年の1月は1日～8日', function() {
+				nengo.setNengo(3);
+				nengo.setYear(64);
+				nengo.setMonth(1);
+				expect(nengo.dates).to.have.length(8);
+				expect(nengo.dates[nengo.dates.length - 1]).to.equal(8);
+			});
+
+			it('昭和1年の12月は25日～31日', function() {
+				nengo.setNengo(3);
+				nengo.setYear(1);
+				nengo.setMonth(12);
+				expect(nengo.dates).to.have.length(7);
+				expect(nengo.dates[0]).to.equal(25);
+			});
+
+			it('大正15年の12月は1日～24日', function() {
+				nengo.setNengo(2);
+				nengo.setYear(15);
+				nengo.setMonth(12);
+				expect(nengo.dates).to.have.length(24);
+				expect(nengo.dates[nengo.dates.length - 1]).to.equal(24);
+			});
+
+			it('大正1年の7月は30日～31日', function() {
+				nengo.setNengo(2);
+				nengo.setYear(1);
+				nengo.setMonth(7);
+				expect(nengo.dates).to.have.length(2);
+				expect(nengo.dates[0]).to.equal(30);
+			});
+
+			it('明治45年の7月は1日～29日', function() {
+				nengo.setNengo(1);
+				nengo.setYear(45);
+				nengo.setMonth(7);
+				expect(nengo.dates).to.have.length(29);
+				expect(nengo.dates[nengo.dates.length - 1]).to.equal(29);
+			});
+
+			it('明治1年の1月は1日～31日', function() {
+				nengo.setNengo(1);
+				nengo.setYear(1);
+				nengo.setMonth(1);
+				expect(nengo.dates).to.have.length(31);
+				expect(nengo.dates[0]).to.equal(1);
+			});
 		});
 	});
 

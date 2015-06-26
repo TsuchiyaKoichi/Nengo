@@ -22,10 +22,10 @@
 		this.months = [];
 		this.dates = [];
 		// 選択中年月日
-		this.currentNengo = 1;
-		this.currentYear = 1;
-		this.currentMonth = 1;
-		this.currentDate = 1;
+		this.currentNengo = -1;
+		this.currentYear = -1;
+		this.currentMonth = -1;
+		this.currentDate = -1;
 
 		// 初期化処理
 		this.initialize(params);
@@ -56,14 +56,18 @@
 	//===============================================
 	Nengo.prototype.setNengo = function(nengoId) {
 
+		this.currentNengo = nengoId;
+		this.reloadYears();
+	};
+
+	Nengo.prototype.reloadYears = function() {
+		
 		// 年号情報を取得
-		var obj = this.nengos[nengoId - 1];
+		var nengoInfo = this.nengos[this.currentNengo - 1];
 
 		// years配列を更新
-		var end = obj.endDate.getFullYear() - obj.startDate.getFullYear() + 1;
+		var end = nengoInfo.endDate.getFullYear() - nengoInfo.startDate.getFullYear() + 1;
 		this.years = range(1, end);
-
-		this.currentNengo = nengoId;
 	};
 
 	//===============================================
@@ -71,23 +75,33 @@
 	//===============================================
 	Nengo.prototype.setYear = function(year) {
 
-		if(this.currentYear !== year) {
-			this.currentYear = year;
-			this.reloadMonths();
-		}
+		this.currentYear = year;
+		this.reloadMonths();
 	};
 
 	Nengo.prototype.reloadMonths = function() {
 
-		if(this.currentYear === this.years[0]) {
+		var start = 1;
+		var end = 12;
 
-			this.months = range(this.nengos[this.currentNengo - 1].startDate.getMonth() + 1, 12);
-		} else if(this.currentYear === this.years[this.years.length - 1]) {
-
-			this.months = range(1, this.nengos[this.currentNengo - 1].endDate.getMonth() + 1);
-		} else {
-			this.months = range(1, 12);	
+		// 年号の変わり目のとき
+		var currentADYear = this.getADYear(this.currentNengo, this.currentYear);
+		var nengoInfo = this.nengos[this.currentNengo - 1];
+		if(currentADYear === nengoInfo.startDate.getFullYear()) {
+			start = nengoInfo.startDate.getMonth() + 1;
+			if(this.currentMonth === start) {
+				this.reloadDates();
+			}
+		} else if(currentADYear === nengoInfo.endDate.getFullYear()) {
+			end = nengoInfo.endDate.getMonth() + 1
+			if(this.currentMonth === end) {
+				this.reloadDates();
+			}
 		}
+
+		this.months = range(start, end);
+
+		this.reloadDates();
 	};
 
 	//===============================================
@@ -95,16 +109,32 @@
 	//===============================================
 	Nengo.prototype.setMonth = function(month) {
 
-		// dates配列を更新
-		var end = this.MONTH_DATE[month - 1];
-		if(month === 2 && this.isLeapYear(this.getADYear(this.currentNengo, this.currentYear))) {
+		this.currentMonth = month;
+		this.reloadDates();
+	};
+
+	Nengo.prototype.reloadDates = function() {
+
+		var start = 1;
+		var end = this.MONTH_DATE[this.currentMonth - 1];
+
+		var currentADYear = this.getADYear(this.currentNengo, this.currentYear);
+
+		// うるう年の2月のとき
+		if(this.currentMonth === 2 && this.isLeapYear(currentADYear)) {
 			end = 29;
 		}
 
-		this.dates = range(1, end);
+		// 年号の変わり目のとき
+		var nengoInfo = this.nengos[this.currentNengo - 1];
+		if(currentADYear === nengoInfo.startDate.getFullYear() && this.currentMonth === nengoInfo.startDate.getMonth() + 1) {
+			start = nengoInfo.startDate.getDate();
+		} else if(currentADYear === nengoInfo.endDate.getFullYear() && this.currentMonth === nengoInfo.endDate.getMonth() + 1) {
+			end = nengoInfo.endDate.getDate();
+		}
 
-		this.currentMonth = month;
-	};
+		this.dates = range(start, end);
+	}
 
 	//===============================================
 	// 日をセットする
